@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FreeFire Tournament — Organizer Panel</title>
+  <style>
+    :root{--accent:#ff6b6b;--muted:#666}
+    body{font-family:Inter,system-ui,Segoe UI,Arial; margin:0;background:#f6f7fb;color:#111}
+    header{background:linear-gradient(90deg,#0f172a,#0b1220);color:#fff;padding:18px 20px}
+    .container{max-width:1100px;margin:20px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(11,20,34,0.06)}
+    h1,h2{margin:0 0 8px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select,textarea,button{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px}
+    button{cursor:pointer;background:var(--accent);color:#fff;border:0}
+    .muted{color:var(--muted);font-size:13px}
+    .list{max-height:420px;overflow:auto}
+    .team-item{display:flex;justify-content:space-between;align-items:center;padding:8px 6px;border-bottom:1px dashed #eef2f7}
+    .small{font-size:13px}
+    .actions button{margin-left:6px;padding:6px 8px;border-radius:6px;background:#0b1220;color:#fff;border:0}
+    .admin-panel{display:none}
+    .public-header{display:flex;justify-content:space-between;align-items:center}
+    .badge{background:#eef8ff;padding:6px 8px;border-radius:999px;font-weight:600}
+    .chat-box{height:220px;border:1px solid #eef2f7;border-radius:8px;padding:8px;overflow:auto;background:#fbfdff}
+    .chat-input{display:flex;gap:8px;margin-top:8px}
+    .center{display:flex;align-items:center;justify-content:center}
+    .winner{font-weight:700;color:var(--accent)}
+    footer{margin:20px 0;text-align:center;color:var(--muted)}
+    @media(max-width:900px){.grid{grid-template-columns:1fr;}.card{margin-bottom:12px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container public-header">
+      <div>
+        <h1>FreeFire Tournament</h1>
+        <div class="muted">Organize matches, manage teams, schedule & prizes</div>
+      </div>
+      <div>
+        <button id="adminToggleBtn">Admin Login</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="card">
+        <div id="publicArea">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div>
+              <h2 id="tournamentTitle">Open FreeFire Cup</h2>
+              <div class="muted">Entry fee: <span id="entryFee">--</span> | Prize pool: <span id="prizePool">--</span></div>
+            </div>
+            <div class="badge" id="statusBadge">No schedule</div>
+          </div>
+
+          <h3>Match Schedule</h3>
+          <div id="scheduleList" class="list"></div>
+
+          <h3 style="margin-top:14px">Teams</h3>
+          <div id="teamsList" class="list"></div>
+
+          <h3 style="margin-top:14px">Winners</h3>
+          <div id="winnersArea" class="muted">No winners chosen yet.</div>
+
+          <h3 style="margin-top:14px">Live Chat</h3>
+          <div class="chat-box" id="chatBox"></div>
+          <div class="chat-input">
+            <input id="chatInput" placeholder="Type message (this chat is local-only)" />
+            <button id="chatSend">Send</button>
+          </div>
+        </div>
+
+        <div id="adminArea" class="admin-panel">
+          <h2>Admin Panel</h2>
+
+          <div style="margin-bottom:10px">
+            <label>Admin Name</label>
+            <input id="adminName" placeholder="Organizer name" />
+            <label style="margin-top:8px">Admin Email</label>
+            <input id="adminEmail" placeholder="email@example.com" />
+            <button id="saveAdminDetails" style="margin-top:8px">Save Admin Details</button>
+          </div>
+
+          <hr />
+
+          <h3>Create / Update Tournament Info</h3>
+          <label>Tournament Title</label>
+          <input id="titleInput" />
+          <label>Entry Fee (₹)</label>
+          <input id="entryFeeInput" type="number" min="0" />
+          <label>Prize Pool (₹)</label>
+          <input id="prizePoolInput" type="number" min="0" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="saveTournament">Save Tournament</button>
+            <button id="clearAll" style="background:#ccc;color:#111">Clear Data</button>
+          </div>
+
+          <hr />
+
+          <h3>Add Schedule</h3>
+          <label>Match Title</label>
+          <input id="matchTitle" placeholder="Qualifier / Final" />
+          <label>Start Time (YYYY-MM-DD HH:MM)</label>
+          <input id="matchTime" placeholder="2025-10-30 16:30" />
+          <label>Info (optional)</label>
+          <input id="matchInfo" />
+          <button id="addSchedule" style="margin-top:8px">Add Schedule</button>
+
+          <hr />
+
+          <h3>Manage Teams</h3>
+          <label>Team Name</label>
+          <input id="teamName" placeholder="Team Titan" />
+          <label>Players (comma separated)</label>
+          <input id="teamPlayers" placeholder="player1, player2, player3" />
+          <button id="addTeam" style="margin-top:8px">Add Team</button>
+
+          <div style="margin-top:8px;" class="list" id="adminTeamsList"></div>
+
+          <hr />
+
+          <h3>Set Winners / Payout</h3>
+          <label>1st Prize (₹)</label>
+          <input id="firstPrizeInput" type="number" />
+          <label>2nd Prize (₹)</label>
+          <input id="secondPrizeInput" type="number" />
+          <label>1st Place Team</label>
+          <select id="firstPlaceSelect"><option value="">--choose--</option></select>
+          <label>2nd Place Team</label>
+          <select id="secondPlaceSelect"><option value="">--choose--</option></select>
+          <button id="setWinners" style="margin-top:8px">Set Winners</button>
+
+        </div>
+      </section>
+
+      <aside class="card">
+        <h3>Quick Info</h3>
+        <div class="muted small">Admin password is stored in-browser only (change it in code if you want). Default password: <strong>admin123</strong></div>
+        <hr />
+        <h4>Admin Controls</h4>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="openAdminBtn">Open Admin Panel</button>
+          <button id="logoutAdminBtn" style="background:#ccc;color:#111">Logout</button>
+        </div>
+        <hr />
+        <h4>Prize & Entry</h4>
+        <div class="muted small">Set entry fee and prize pool from Admin Panel. Winners payout is simulated and recorded locally.</div>
+      </aside>
+    </div>
+
+    <footer>
+      Built for learning — data stored in your browser (localStorage). Not for production use.
+    </footer>
+  </main>
+
+  <script>
+    // Simple client-only tournament manager. Data stored in localStorage so it persists in the browser.
+    const ADMIN_PW_KEY = 'ff_admin_pw';
+    const DEFAULT_PW = 'nikhil143';
+
+    // Storage keys
+    const K = {
+      tournament: 'ff_tournament',
+      schedule: 'ff_schedule',
+      teams: 'ff_teams',
+      winners: 'ff_winners',
+      chat: 'ff_chat',
+      admin: 'ff_admin'
+    };
+
+    // Elements
+    const adminToggleBtn = document.getElementById('adminToggleBtn');
+    const adminArea = document.getElementById('adminArea');
+    const adminToggleOpen = document.getElementById('openAdminBtn');
+    const logoutAdminBtn = document.getElementById('logoutAdminBtn');
+    const adminNameEl = document.getElementById('adminName');
+    const adminEmailEl = document.getElementById('adminEmail');
+
+    const titleInput = document.getElementById('titleInput');
+    const entryFeeInput = document.getElementById('entryFeeInput');
+    const prizePoolInput = document.getElementById('prizePoolInput');
+    const saveTournamentBtn = document.getElementById('saveTournament');
+    const clearAllBtn = document.getElementById('clearAll');
+
+    const scheduleList = document.getElementById('scheduleList');
+    const teamsList = document.getElementById('teamsList');
+    const adminTeamsList = document.getElementById('adminTeamsList');
+
+    const matchTitle = document.getElementById('matchTitle');
+    const matchTime = document.getElementById('matchTime');
+    const matchInfo = document.getElementById('matchInfo');
+    const addScheduleBtn = document.getElementById('addSchedule');
+
+    const teamName = document.getElementById('teamName');
+    const teamPlayers = document.getElementById('teamPlayers');
+    const addTeamBtn = document.getElementById('addTeam');
+
+    const firstPrizeInput = document.getElementById('firstPrizeInput');
+    const secondPrizeInput = document.getElementById('secondPrizeInput');
+    const firstPlaceSelect = document.getElementById('firstPlaceSelect');
+    const secondPlaceSelect = document.getElementById('secondPlaceSelect');
+    const setWinnersBtn = document.getElementById('setWinners');
+
+    const winnersArea = document.getElementById('winnersArea');
+
+    const entryFee = document.getElementById('entryFee');
+    const prizePool = document.getElementById('prizePool');
+    const statusBadge = document.getElementById('statusBadge');
+    const tournamentTitle = document.getElementById('tournamentTitle');
+
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const chatSend = document.getElementById('chatSend');
+
+    // Admin auth simple (client-side only)
+    function isAdminLoggedIn(){
+      return sessionStorage.getItem('ff_admin_logged') === '1';
+    }
+
+    function promptAdminLogin(){
+      const storedPw = localStorage.getItem(ADMIN_PW_KEY) || DEFAULT_PW;
+      const pw = prompt('Enter admin password:');
+      if(pw === storedPw){
+        sessionStorage.setItem('ff_admin_logged','1');
+        showAdminPanel();
+        alert('Admin logged in');
+      } else {
+        alert('Wrong password');
+      }
+    }
+
+    function showAdminPanel(){
+      adminArea.style.display='block';
+      adminToggleBtn.style.display='none';
+      populateAdminFields();
+    }
+
+    function hideAdminPanel(){
+      adminArea.style.display='none';
+      adminToggleBtn.style.display='inline-block';
+    }
+
+    adminToggleBtn.addEventListener('click',()=>{
+      if(isAdminLoggedIn()) showAdminPanel(); else promptAdminLogin();
+    });
+    adminToggleOpen.addEventListener('click',()=>{
+      if(isAdminLoggedIn()) showAdminPanel(); else promptAdminLogin();
+    });
+    logoutAdminBtn.addEventListener('click',()=>{
+      sessionStorage.removeItem('ff_admin_logged');
+      hideAdminPanel();
+      alert('Logged out');
+    });
+
+    // Data helpers
+    function read(key, fallback){
+      return JSON.parse(localStorage.getItem(key) || 'null') || fallback;
+    }
+    function write(key, val){
+      localStorage.setItem(key, JSON.stringify(val));
+    }
+
+    // Tournament save
+    saveTournamentBtn.addEventListener('click',()=>{
+      const t = {title:titleInput.value||'Open FreeFire Cup',entryFee:Number(entryFeeInput.value||0),prizePool:Number(prizePoolInput.value||0)};
+      write(K.tournament,t);
+      renderPublic();
+      alert('Tournament info saved');
+    });
+
+    document.getElementById('saveAdminDetails').addEventListener('click',()=>{
+      const admin = {name:adminNameEl.value,email:adminEmailEl.value};
+      write(K.admin,admin);
+      alert('Admin details saved');
+      renderPublic();
+    });
+
+    clearAllBtn.addEventListener('click',()=>{
+      if(!confirm('Clear all tournament data from this browser?')) return;
+      Object.values(K).forEach(k=>localStorage.removeItem(k));
+      renderAll();
+      alert('Cleared');
+    });
+
+    // Schedule
+    addScheduleBtn.addEventListener('click',()=>{
+      const arr = read(K.schedule,[]);
+      arr.push({title:matchTitle.value, time:matchTime.value, info:matchInfo.value});
+      write(K.schedule,arr);
+      matchTitle.value='';matchTime.value='';matchInfo.value='';
+      renderPublic();
+    });
+
+    // Teams
+    addTeamBtn.addEventListener('click',()=>{
+      const arr = read(K.teams,[]);
+      const team = {id:Date.now(),name:teamName.value,players:teamPlayers.value.split(',').map(s=>s.trim()).filter(Boolean)};
+      if(!team.name) return alert('Team name required');
+      arr.push(team); write(K.teams,arr);
+      teamName.value='';teamPlayers.value='';
+      renderPublic();
+    });
+
+    // Set winners
+    setWinnersBtn.addEventListener('click',()=>{
+      const winners = {first:{team:firstPlaceSelect.value,amount:Number(firstPrizeInput.value||0)},second:{team:secondPlaceSelect.value,amount:Number(secondPrizeInput.value||0)}};
+      write(K.winners,winners);
+      renderPublic();
+      alert('Winners saved (simulated payout recorded locally)');
+    });
+
+    // Chat
+    function renderChat(){
+      const arr = read(K.chat,[]);
+      chatBox.innerHTML = arr.map(m=>`<div><strong>${escapeHtml(m.sender)}:</strong> <span class=\"muted\">${escapeHtml(m.text)}</span></div>`).join('');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    chatSend.addEventListener('click',()=>{
+      const txt = chatInput.value.trim(); if(!txt) return; const arr = read(K.chat,[]);
+      arr.push({sender:'Guest',text:txt,time:Date.now()}); write(K.chat,arr); chatInput.value=''; renderChat();
+    });
+
+    // Renderers
+    function renderPublic(){
+      const t = read(K.tournament,{title:'Open FreeFire Cup',entryFee:0,prizePool:0});
+      tournamentTitle.textContent = t.title; entryFee.textContent = t.entryFee ? '₹'+t.entryFee : 'Free'; prizePool.textContent = t.prizePool ? '₹'+t.prizePool : '—';
+
+      const sch = read(K.schedule,[]);
+      scheduleList.innerHTML = sch.length ? sch.map(s=>`<div class=\"team-item\"><div><strong>${escapeHtml(s.title)}</strong><div class=\"small muted\">${escapeHtml(s.time)} — ${escapeHtml(s.info||'')}</div></div></div>`).join('') : '<div class=\"muted\">No schedule added</div>';
+      statusBadge.textContent = sch.length ? 'Scheduled' : 'No schedule';
+
+      const teams = read(K.teams,[]);
+      teamsList.innerHTML = teams.length ? teams.map(t=>`<div class=\"team-item\"><div><strong>${escapeHtml(t.name)}</strong><div class=\"small muted\">${escapeHtml((t.players||[]).join(', '))}</div></div></div>`).join('') : '<div class=\"muted\">No teams registered</div>';
+
+      // winners
+      const winners = read(K.winners,null);
+      if(winners){
+        const teamsById = {}; (read(K.teams,[])||[]).forEach(tm=>teamsById[tm.id]=tm.name);
+        const firstName = teamsById[winners.first.team] || winners.first.team || '—';
+        const secondName = teamsById[winners.second.team] || winners.second.team || '—';
+        winnersArea.innerHTML = `<div class=\"winner\">1st: ${escapeHtml(firstName)} — ₹${winners.first.amount||0}</div><div class=\"muted\">2nd: ${escapeHtml(secondName)} — ₹${winners.second.amount||0}</div>`;
+      } else {
+        winnersArea.innerHTML = '<div class=\"muted\">No winners chosen yet.</div>';
+      }
+
+      renderAdminLists(); renderChat();
+    }
+
+    function renderAdminLists(){
+      const teams = read(K.teams,[]);
+      adminTeamsList.innerHTML = teams.length ? teams.map(t=>`<div class=\"team-item\"><div><strong>${escapeHtml(t.name)}</strong><div class=\"small muted\">${escapeHtml((t.players||[]).join(', '))}</div></div><div class=\"actions\"><button onclick=\"removeTeam(${t.id})\">Delete</button></div></div>`).join('') : '<div class=\"muted\">No teams</div>';
+
+      // fill selects
+      const opts = ['<option value="">--choose--</option>'].concat(teams.map(t=>`<option value=\"${t.id}\">${escapeHtml(t.name)}</option>`)).join('');
+      firstPlaceSelect.innerHTML = opts; secondPlaceSelect.innerHTML = opts;
+    }
+
+    // Admin helper to populate fields
+    function populateAdminFields(){
+      const t = read(K.tournament,{title:'Open FreeFire Cup',entryFee:0,prizePool:0});
+      titleInput.value = t.title; entryFeeInput.value = t.entryFee || 0; prizePoolInput.value = t.prizePool || 0;
+      const admin = read(K.admin,{name:'',email:''}); adminNameEl.value = admin.name; adminEmailEl.value = admin.email;
+      const winners = read(K.winners,null);
+      if(winners){ firstPrizeInput.value = winners.first.amount||0; secondPrizeInput.value = winners.second.amount||0; }
+    }
+
+    // Utility: escape HTML
+    function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // Expose removeTeam for inline onclick calls
+    window.removeTeam = function(id){
+      let arr = read(K.teams,[]); arr = arr.filter(t=>t.id!==id); write(K.teams,arr); renderPublic();
+    };
+
+    // Initial render
+    (function init(){
+      if(!localStorage.getItem(ADMIN_PW_KEY)) localStorage.setItem(ADMIN_PW_KEY, DEFAULT_PW);
+      renderAll();
+    })();
+// Add input and button in admin area HTML where appropriate:
+// <input id="newAdminPw" placeholder="New admin password" />
+// <button id="changeAdminPwBtn">Change Password</button>
+
+document.getElementById('changeAdminPwBtn').addEventListener('click', () => {
+  const pw = document.getElementById('newAdminPw').value.trim();
+  if (!pw) return alert('Enter a password');
+  localStorage.setItem('ff_admin_pw', pw);
+  alert('Admin password updated');
+});
+
+
+    function renderAll(){ renderPublic(); renderChat(); }
+
+  </script>
+</body>
+</html>
